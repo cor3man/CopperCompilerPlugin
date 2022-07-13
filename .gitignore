@@ -1,1 +1,4 @@
-/project/target/config-classes/$9eac47db0409791c3452$.class
+/project/target/*
+/target/*
+/.idea/*
+
