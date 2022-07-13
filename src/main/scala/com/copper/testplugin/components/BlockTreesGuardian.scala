@@ -11,7 +11,7 @@ class BlockTreesGuardian[G <: Global](val global: G) {
   private object BlockTreesGuardianTraverser extends Traverser {
     override def traverse(tree: Tree): Unit = {
         //println(show(tree))
-        println(showRaw(tree))
+        //println(showRaw(tree))
         tree match {
 /*        case block @ Function(vparam, body) => {println(vparam)}
           case block @ If(cond, thenp, elsep) => {println(s"if block: $cond : $thenp : $elsep")}
