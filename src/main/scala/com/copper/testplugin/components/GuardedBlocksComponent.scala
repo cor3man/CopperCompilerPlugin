@@ -9,8 +9,9 @@ class GuardedBlocksComponent(val global: Global) extends PluginComponent {
 
   override val phaseName: String = "guardblocks"
   override def description: String = "check for unused statements in code blocks"
+  override val runsAfter: List[String] = List("parser")
   //override val runsAfter: List[String] = List("typer")
-  override val runsAfter: List[String] = List("jvm")
+  //override val runsAfter: List[String] = List("jvm")
 
   private val guardian = new BlockTreesGuardian[global.type](global)
 
