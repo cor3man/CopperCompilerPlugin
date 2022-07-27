@@ -1,40 +1,36 @@
 package com.copper.testplugin.components
 
+import com.copper.testplugin.model.Struct
+
 import scala.tools.nsc.Global
+import scala.collection.mutable.ListBuffer
 
 class BlockTreesGuardian[G <: Global](val global: G) {
 
   import global._
-  var listOfInvocations: List[String] = List("")
+  var name: String = ""
+  val listOfRequests: ListBuffer[String] = ListBuffer("")
+  val listOfSubscribes: ListBuffer[String] = ListBuffer("")
+
   val guard: Tree => Unit = BlockTreesGuardianTraverser.traverse
 
-
-  def find(tree: Tree): List[String] = {
+  def getStruct(tree: Tree): Struct = {
+    listOfRequests.clear()
+    listOfSubscribes.clear()
     BlockTreesGuardianTraverser.traverse(tree)
-    listOfInvocations
+    Struct(name, listOfRequests, listOfSubscribes)
   }
 
   private object BlockTreesGuardianTraverser extends Traverser {
     override def traverse(tree: Tree): Unit = {
-        //println(show(tree))
         //println(showRaw(tree))
+        name = tree.pos.source.file.name
         tree match {
-          case block @ Apply(TypeApply(Select(Ident(TermName("sbus")), TermName("request")), List(Ident(TypeName("Unit")))), List(Literal(Constant(value)))) => {
-            //println("------------------------------------------")
-            //println(showRaw(block))
-            //println(s"sbus.request($value)")
-            //think about it!!! ---- listOfInvocations ++ (s"sbus.request($value)")
-            listOfInvocations = (tree.pos.source.path + " : " + s"sbus.request($value)") :: listOfInvocations
-            //println("------------ " + tree.pos.source.file)
-            //println("------------------------------------------")
+          case Apply(TypeApply(Select(Ident(TermName("sbus")), TermName("request")), List(Ident(TypeName(_)))), List(Literal(Constant(value)))) => {
+            listOfRequests.append(s"sbus.request($value)")
           }
-          case block @ Apply(Select(New(Ident(TypeName("Subscribe"))), termNames.CONSTRUCTOR), List(Literal(Constant(value)))) => {
-            //println("------------------------------------------")
-            //println(showRaw(block))
-            //println(s"@Subscribe($value)")
-            listOfInvocations = (tree.pos.source.path + " : " + s"@Subscribe($value)") :: listOfInvocations
-            //println(tree.pos.source.path)
-            //println("------------------------------------------")
+          case Apply(Select(New(Ident(TypeName("Subscribe"))), termNames.CONSTRUCTOR), List(Literal(Constant(value)))) => {
+            listOfSubscribes.append(s"@Subscribe($value)")
           }
           case _ =>
         }
