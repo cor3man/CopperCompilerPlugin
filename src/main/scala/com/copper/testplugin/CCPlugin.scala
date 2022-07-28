@@ -42,13 +42,14 @@ class CCPlugin(val global: Global) extends Plugin {
         println("********** Phase start ***********")
         val struct = guardian.getStruct(unit.body)
         println(struct.toJsonString)
-        writeFile(myOptions.get("out").toString, struct.name + ".json", struct)
+        if (!struct.isEmpty) writeFile(myOptions.get("out").toString, struct.name + ".json", struct)
         println("********** Phase end ***********")
       }
     }
 
     def writeFile(dirName: String, filename: String, struct: Struct): Unit = {
-      new File(dirName).mkdirs();
+      val dir: File = new File(dirName)
+      dir.mkdirs()
       val file = new File(dirName + filename)
       val bw = new BufferedWriter(new FileWriter(file))
       bw.write(struct.toJsonString)
