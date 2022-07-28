@@ -1,4 +1,4 @@
 <plugin>
-	<name>guardedblocks</name>
-	<classname>com.copper.testplugin.GuardedBlocksPlugin</classname>
+	<name>ccplugin</name>
+	<classname>com.copper.testplugin.CCPlugin</classname>
 </plugin>
