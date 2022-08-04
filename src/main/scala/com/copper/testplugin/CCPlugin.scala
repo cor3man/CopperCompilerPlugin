@@ -34,22 +34,16 @@ class CCPlugin(val global: Global) extends Plugin {
     override val phaseName: String = "ccplugin"
     override def description: String = "collect sbus invocations"
     override val runsAfter: List[String] = List("parser")
-    //override val runsAfter: List[String] = List("typer")
 
     private val guardian = new BlockTrees[global.type](global)
 
     override def newPhase(prev: Phase): Phase = new StdPhase(prev) {
       override def apply(unit: CompilationUnit): Unit = {
-        println("\n********** Phase start ***********")
         val struct = guardian.getClassFileStruct(unit.body)
-        println("\n Classes to save ----------------- >  : ")
-        struct.foreach(s => println(s.name))
 
         struct.foreach(s => {
           if (!s.isEmpty) writeFile(myOptions.get("out").toString, myOptions.get("prj") + "-" + s.name + ".json", s)
         })
-
-        println("\n********** Phase end ***********")
       }
     }
 
