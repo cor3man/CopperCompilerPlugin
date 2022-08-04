@@ -45,6 +45,11 @@ class BlockTrees[G <: Global](val global: G) {
           names.push(classPackage)
           processBody(list)
         }
+        case t @ PackageDef(a, list) => {
+          val classPackage = (a + ".")
+          names.push(classPackage)
+          processBody(list)
+        }
         case _ =>
       }
       super.traverse(tree)
@@ -83,7 +88,7 @@ class BlockTrees[G <: Global](val global: G) {
         case _ =>
       }
 
-      val struct = Struct(name, listOfRequests, listOfSubscribes, listOfCommands, listOfEvents)
+      val struct = Struct(name.substring(0, name.length-1), listOfRequests, listOfSubscribes, listOfCommands, listOfEvents)
       struct
     }
   }
