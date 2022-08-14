@@ -39,7 +39,6 @@ class BlockTrees[G <: Global](val global: G) {
     }
 
     override def traverse(tree: Tree): Unit = {
-      println(showRaw(tree))
       tree match {
         case t @ PackageDef(Select(a, b), list) => {
           val classPackage = (a + "." + b + ".")
