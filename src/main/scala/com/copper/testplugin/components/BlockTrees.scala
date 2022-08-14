@@ -39,6 +39,7 @@ class BlockTrees[G <: Global](val global: G) {
     }
 
     override def traverse(tree: Tree): Unit = {
+      println(showRaw(tree))
       tree match {
         case t @ PackageDef(Select(a, b), list) => {
           val classPackage = (a + "." + b + ".")
@@ -64,7 +65,7 @@ class BlockTrees[G <: Global](val global: G) {
       var listOfSubscribes: ListBuffer[String] = ListBuffer.empty
 
       list.foreach {
-        case t @ Apply(TypeApply(Select(Ident(TermName("sbus")), TermName("request")), List(_*)), List(Literal(Constant(value)))) => {
+        case t @ Apply(TypeApply(Select(Ident(TermName("sbus")), TermName("request")), List(_*)), List(Literal(Constant(value)), _*)) => {
           listOfRequests.append(value.toString)
         }
         case t @ Apply(Select(Ident(TermName("sbus")), TermName("command")), List(Literal(Constant(value)), _*)) => {
