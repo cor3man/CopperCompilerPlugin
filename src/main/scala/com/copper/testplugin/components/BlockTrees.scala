@@ -34,11 +34,14 @@ class BlockTrees[G <: Global](val global: G) {
         }
         case _ =>
       }
-      listOfStructs.append(StructBuilder.build(trees, names.reverse.mkString))
+      val name = names.reverse.mkString
+      val struct = Struct(name.substring(0, name.length-1), ListBuffer.empty, ListBuffer.empty, ListBuffer.empty, ListBuffer.empty)
+      listOfStructs.append(StructBuilder.build(trees,struct))
       names.pop()
     }
 
     override def traverse(tree: Tree): Unit = {
+      //println(showRaw(tree))
       tree match {
         case t @ PackageDef(Select(a, b), list) => {
           val classPackage = (a + "." + b + ".")
@@ -57,38 +60,38 @@ class BlockTrees[G <: Global](val global: G) {
   }
 
   private object StructBuilder {
-    def build(list: List[Tree], name: String): Struct = {
-      var listOfRequests: ListBuffer[String] = ListBuffer.empty
-      var listOfCommands: ListBuffer[String] = ListBuffer.empty
-      var listOfEvents: ListBuffer[String] = ListBuffer.empty
-      var listOfSubscribes: ListBuffer[String] = ListBuffer.empty
-
+    def build(list: List[Tree], struct: Struct): Struct = {
+      println("----------------Start building ------------------")
+      //list.foreach(l=> println(showRaw(l)))
       list.foreach {
-        case t @ Apply(TypeApply(Select(Ident(TermName("sbus")), TermName("request")), List(_*)), List(Literal(Constant(value)), _*)) => {
-          listOfRequests.append(value.toString)
-        }
-        case t @ Apply(Select(Ident(TermName("sbus")), TermName("command")), List(Literal(Constant(value)), _*)) => {
-          listOfCommands.append(value.toString)
-        }
-        case t @ Apply(Select(Ident(TermName("sbus")), TermName("event")), List(Literal(Constant(value)), _*)) => {
-          listOfEvents.append(value.toString)
-        }
-        case t @ Apply(TypeApply(Select(Ident(TermName("sbus")), TermName("on")), List(_, _)), List(Literal(Constant(value)))) => {
-          listOfSubscribes.append(value.toString)
-        }
-        case t @ Apply(Select(New(Ident(TypeName("Subscribe"))), termNames.CONSTRUCTOR), List(Literal(Constant(value)))) => {
-          listOfSubscribes.append(value.toString)
-        }
-        case t @ DefDef(Modifiers(_, _, listOfMods), _, _, _, _, _) => {
+        case t @DefDef(Modifiers(_, _, listOfMods), _, _, _, _, apply) => {
           listOfMods.foreach {
-            case Apply(Select(New(Ident(TypeName("Subscribe"))), _), List(Literal(Constant(value)))) => listOfSubscribes.append(value.toString)
+            case Apply(Select(New(Ident(TypeName("Subscribe"))), _), List(Literal(Constant(value)))) => struct.subscribes.append(value.toString)
             case _ =>
           }
+
+          build(apply.filter {
+            case t @ Apply(TypeApply(Select(Ident(TermName("sbus")), _), List(_*)), List(_, _*)) => true
+            case _ => false
+          }, struct)
+        }
+        case t @ Apply(TypeApply(Select(Ident(TermName("sbus")), TermName("request")), List(_*)), List(Literal(Constant(value)), _*)) => {
+          struct.requests.append(value.toString)
+        }
+        case t @ Apply(Select(Ident(TermName("sbus")), TermName("command")), List(Literal(Constant(value)), _*)) => {
+          struct.commands.append(value.toString)
+        }
+        case t @ Apply(Select(Ident(TermName("sbus")), TermName("event")), List(Literal(Constant(value)), _*)) => {
+          struct.events.append(value.toString)
+        }
+        case t @ Apply(TypeApply(Select(Ident(TermName("sbus")), TermName("on")), List(_, _)), List(Literal(Constant(value)))) => {
+          struct.subscribes.append(value.toString)
+        }
+        case t @ Apply(Select(New(Ident(TypeName("Subscribe"))), termNames.CONSTRUCTOR), List(Literal(Constant(value)))) => {
+          struct.subscribes.append(value.toString)
         }
         case _ =>
       }
-
-      val struct = Struct(name.substring(0, name.length-1), listOfRequests, listOfSubscribes, listOfCommands, listOfEvents)
       struct
     }
   }
